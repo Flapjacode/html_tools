@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Poll</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f4f4;
+      padding: 40px;
+      color: #333;
+    }
+
+    .poll-container {
+      background: white;
+      padding: 30px;
+      max-width: 500px;
+      margin: auto;
+      border-radius: 15px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .poll-option {
+      background: #f9f9f9;
+      padding: 10px 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      transition: background 0.3s;
+    }
+
+    .poll-option:hover {
+      background: #e0f0ff;
+    }
+
+    input[type="radio"] {
+      margin-right: 10px;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .result-bar {
+      background-color: #007bff;
+      height: 20px;
+      border-radius: 5px;
+      text-align: right;
+      padding-right: 5px;
+      color: white;
+      line-height: 20px;
+      transition: width 0.5s ease-in-out;
+    }
+
+    .result-item {
+      margin-bottom: 15px;
+    }
+
+    .percentage-label {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    #results {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="poll-container">
+    <h2>Which option do you prefer?</h2>
+    <div id="poll">
+      <label class="poll-option">
+        <input type="radio" name="option" value="0"> Option A
+      </label>
+      <label class="poll-option">
+        <input type="radio" name="option" value="1"> Option B
+      </label>
+      <label class="poll-option">
+        <input type="radio" name="option" value="2"> Option C
+      </label>
+      <button onclick="submitVote()">Vote</button>
+    </div>
+
+    <div id="results" style="display:none;">
+      <h3 style="text-align:center;">Results:</h3>
+      <div class="result-item">
+        <div class="percentage-label">Option A: <span id="labelA">0%</span></div>
+        <div class="result-bar" id="barA" style="width:0%"></div>
+      </div>
+      <div class="result-item">
+        <div class="percentage-label">Option B: <span id="labelB">0%</span></div>
+        <div class="result-bar" id="barB" style="width:0%"></div>
+      </div>
+      <div class="result-item">
+        <div class="percentage-label">Option C: <span id="labelC">0%</span></div>
+        <div class="result-bar" id="barC" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const POLL_KEY = 'poll-v2';
+    const options = ["Option A", "Option B", "Option C"];
+    let voteCounts = JSON.parse(localStorage.getItem(POLL_KEY)) || [0, 0, 0];
+
+    function submitVote() {
+      const radios = document.getElementsByName('option');
+      let selected = null;
+
+      for (const radio of radios) {
+        if (radio.checked) {
+          selected = parseInt(radio.value);
+          break;
+        }
+      }
+
+      if (selected === null) {
+        alert("Please select an option before voting.");
+        return;
+      }
+
+      voteCounts[selected]++;
+      localStorage.setItem(POLL_KEY, JSON.stringify(voteCounts));
+      showResults();
+    }
+
+    function showResults() {
+      const total = voteCounts.reduce((a, b) => a + b, 0);
+      if (total === 0) return;
+
+      const percentages = voteCounts.map(v => ((v / total) * 100).toFixed(1));
+
+      document.getElementById("poll").style.display = "none";
+      document.getElementById("results").style.display = "block";
+
+      document.getElementById("labelA").innerText = `${percentages[0]}%`;
+      document.getElementById("labelB").innerText = `${percentages[1]}%`;
+      document.getElementById("labelC").innerText = `${percentages[2]}%`;
+
+      document.getElementById("barA").style.width = `${percentages[0]}%`;
+      document.getElementById("barB").style.width = `${percentages[1]}%`;
+      document.getElementById("barC").style.width = `${percentages[2]}%`;
+    }
+
+    // Auto-show if previously voted
+    if (voteCounts.reduce((a, b) => a + b, 0) > 0) {
+      showResults();
+    }
+  </script>
+
+</body>
+</html>
